@@ -53,7 +53,6 @@ class _WindowVideoPageState extends State<WindowVideoPage> {
     super.initState();
     SystemChrome.setEnabledSystemUIOverlays([]);
     _initController();
-    controller.initialize();
     controller.addListener(listener);
     hideCover();
     ForbidShotUtil.initForbid(context);
@@ -71,18 +70,19 @@ class _WindowVideoPageState extends State<WindowVideoPage> {
   }
 
   _initController() {
+    controller = TencentPlayerController();
     switch (widget.playType) {
       case PlayType.network:
-        controller = TencentPlayerController.network(widget.dataSource);
+        controller.network(widget.dataSource);
         break;
       case PlayType.asset:
-        controller = TencentPlayerController.asset(widget.dataSource);
+        controller.asset(widget.dataSource);
         break;
       case PlayType.file:
-        controller = TencentPlayerController.file(widget.dataSource);
+        controller.file(widget.dataSource);
         break;
       case PlayType.fileId:
-        controller = TencentPlayerController.network(null, playerConfig: PlayerConfig(auth: {"appId": 1252463788, "fileId": widget.dataSource}));
+        controller.network(null, playerConfig: PlayerConfig(auth: {"appId": 1252463788, "fileId": widget.dataSource}));
         break;
     }
   }
@@ -215,8 +215,7 @@ class _WindowVideoPageState extends State<WindowVideoPage> {
   changeClear(int urlIndex, {int startTime}) {
     controller?.removeListener(listener);
     controller?.pause();
-    controller = TencentPlayerController.network(clearUrlList[urlIndex], playerConfig: PlayerConfig(startTime: startTime ?? controller.value.position.inSeconds));
-    controller?.initialize().then((_) {
+    controller?.network(clearUrlList[urlIndex], playerConfig: PlayerConfig(startTime: startTime ?? controller.value.position.inSeconds)).then((_) {
       if (mounted) setState(() {});
     });
     controller?.addListener(listener);

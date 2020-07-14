@@ -40,8 +40,7 @@ class _AutoChangeNextSourcePageState extends State<AutoChangeNextSourcePage> {
   @override
   void initState() {
     super.initState();
-    controller = TencentPlayerController.network(urlList[0]);
-    controller.initialize();
+    controller.network(urlList[0]);
     controller.addListener(listener);
     Screen.keepOn(true);
   }
@@ -77,8 +76,7 @@ class _AutoChangeNextSourcePageState extends State<AutoChangeNextSourcePage> {
     currentIndex ++;
     controller?.removeListener(listener);
     controller?.pause();
-    controller = TencentPlayerController.network(urlList[currentIndex % 3]);
-    controller.initialize();
+    controller.network(urlList[currentIndex % 3]);
     controller.addListener(listener);
   }
 }

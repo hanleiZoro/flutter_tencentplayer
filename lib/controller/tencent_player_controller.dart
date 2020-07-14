@@ -3,28 +3,39 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_tencentplayer/flutter_tencentplayer.dart';
 
+import '../flutter_tencentplayer.dart';
+
 class TencentPlayerController extends ValueNotifier<TencentPlayerValue> {
   int _textureId;
-  final String dataSource;
-  final DataSourceType dataSourceType;
-  final PlayerConfig playerConfig;
+  String dataSource;
+  DataSourceType dataSourceType;
+  PlayerConfig playerConfig;
   MethodChannel channel = TencentPlayer.channel;
 
-  TencentPlayerController.asset(this.dataSource,
-      {this.playerConfig = const PlayerConfig()})
-      : dataSourceType = DataSourceType.asset,
-        super(TencentPlayerValue());
+  TencentPlayerController() : super(TencentPlayerValue());
 
-  TencentPlayerController.network(this.dataSource,
-      {this.playerConfig = const PlayerConfig()})
-      : dataSourceType = DataSourceType.network,
-        super(TencentPlayerValue());
+  Future<void> asset(String dataSource, {PlayerConfig playerConfig = const PlayerConfig()}) {
+    this.dataSource = dataSource;
+    this.dataSourceType = DataSourceType.asset;
+    this.playerConfig = playerConfig;
+    return _initialize();
+  }
 
-  TencentPlayerController.file(String filePath,
-      {this.playerConfig = const PlayerConfig()})
-      : dataSource = filePath,
-        dataSourceType = DataSourceType.file,
-        super(TencentPlayerValue());
+  Future<void> network(String dataSource,
+      {PlayerConfig playerConfig = const PlayerConfig()}) {
+    this.dataSource = dataSource;
+    this.dataSourceType = DataSourceType.network;
+    this.playerConfig = playerConfig;
+    return _initialize();
+  }
+
+  Future<void> file(String filePath,
+      {PlayerConfig playerConfig = const PlayerConfig()}) {
+    this.dataSource = filePath;
+    this.dataSourceType = DataSourceType.file;
+    this.playerConfig = playerConfig;
+    return _initialize();
+  }
 
   bool _isDisposed = false;
   Completer<void> _creatingCompleter;
@@ -33,7 +44,13 @@ class TencentPlayerController extends ValueNotifier<TencentPlayerValue> {
 
   int get textureId => _textureId;
 
-  Future<void> initialize() async {
+  Future<void> _initialize() async {
+    _eventSubscription?.cancel();
+//    if (value.isPlaying) {
+//      await pause();
+//    }
+//    value = TencentPlayerValue();
+
     if (this.playerConfig.supportBackground == false) {
       _lifeCycleObserver = _VideoAppLifeCycleObserver(this);
       _lifeCycleObserver.initialize();
@@ -52,7 +69,7 @@ class TencentPlayerController extends ValueNotifier<TencentPlayerValue> {
     value = value.copyWith(isPlaying: playerConfig.autoPlay);
     dataSourceDescription.addAll(playerConfig.toJson());
     final Map<String, dynamic> response =
-        await channel.invokeMapMethod<String, dynamic>(
+    await channel.invokeMapMethod<String, dynamic>(
       'create',
       dataSourceDescription,
     );
