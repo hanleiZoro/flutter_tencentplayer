@@ -106,7 +106,7 @@ class TencentPlayerController extends ValueNotifier<TencentPlayerValue> {
           value = value.copyWith(isLoading: false);
           break;
         case 'playend':
-          value = value.copyWith(isPlaying: false, position: value.duration);
+          value = value.copyWith(isPlaying: false, position: value.duration, playEnd: true);
           break;
         case 'netStatus':
           value = value.copyWith(netSpeed: map['netSpeed']);
@@ -147,7 +147,7 @@ class TencentPlayerController extends ValueNotifier<TencentPlayerValue> {
   }
 
   Future<void> play() async {
-    value = value.copyWith(isPlaying: true);
+    value = value.copyWith(isPlaying: true, playEnd: false);
     await _applyPlayPause();
   }
 
