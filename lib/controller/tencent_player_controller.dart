@@ -14,7 +14,8 @@ class TencentPlayerController extends ValueNotifier<TencentPlayerValue> {
 
   TencentPlayerController() : super(TencentPlayerValue());
 
-  Future<void> asset(String dataSource, {PlayerConfig playerConfig = const PlayerConfig()}) {
+  Future<void> asset(String dataSource,
+      {PlayerConfig playerConfig = const PlayerConfig()}) {
     this.dataSource = dataSource;
     this.dataSourceType = DataSourceType.asset;
     this.playerConfig = playerConfig;
@@ -45,11 +46,9 @@ class TencentPlayerController extends ValueNotifier<TencentPlayerValue> {
   int get textureId => _textureId;
 
   Future<void> _initialize() async {
-    _eventSubscription?.cancel();
-//    if (value.isPlaying) {
-//      await pause();
-//    }
-//    value = TencentPlayerValue();
+
+    await _eventSubscription?.cancel();
+    value = TencentPlayerValue(isLoading: true);
 
     if (this.playerConfig.supportBackground == false) {
       _lifeCycleObserver = _VideoAppLifeCycleObserver(this);
@@ -75,6 +74,7 @@ class TencentPlayerController extends ValueNotifier<TencentPlayerValue> {
     );
     _textureId = response['textureId'];
     _creatingCompleter.complete(null);
+    value = value.copyWith(isLoading: false);
     final Completer<void> initializingCompleter = Completer<void>();
 
     void eventListener(dynamic event) {
@@ -85,9 +85,10 @@ class TencentPlayerController extends ValueNotifier<TencentPlayerValue> {
       switch (map['event']) {
         case 'initialized':
           value = value.copyWith(
-            duration: Duration(milliseconds: map['duration']),
-            size: Size(map['width']?.toDouble() ?? 0.0,
-                map['height']?.toDouble() ?? 0.0),
+              duration: Duration(milliseconds: map['duration']),
+              size: Size(map['width']?.toDouble() ?? 0.0,
+                  map['height']?.toDouble() ?? 0.0),
+              isLoading: false
           );
           initializingCompleter.complete(null);
           break;
