@@ -46,8 +46,8 @@ class TencentPlayerController extends ValueNotifier<TencentPlayerValue> {
   int get textureId => _textureId;
 
   Future<void> _initialize() async {
+    await relase();
 
-    await _eventSubscription?.cancel();
     value = TencentPlayerValue(isLoading: true);
 
     if (this.playerConfig.supportBackground == false) {
@@ -68,7 +68,7 @@ class TencentPlayerController extends ValueNotifier<TencentPlayerValue> {
     value = value.copyWith(isPlaying: playerConfig.autoPlay);
     dataSourceDescription.addAll(playerConfig.toJson());
     final Map<String, dynamic> response =
-    await channel.invokeMapMethod<String, dynamic>(
+        await channel.invokeMapMethod<String, dynamic>(
       'create',
       dataSourceDescription,
     );
@@ -88,8 +88,7 @@ class TencentPlayerController extends ValueNotifier<TencentPlayerValue> {
               duration: Duration(milliseconds: map['duration']),
               size: Size(map['width']?.toDouble() ?? 0.0,
                   map['height']?.toDouble() ?? 0.0),
-              isLoading: false
-          );
+              isLoading: false);
           initializingCompleter.complete(null);
           break;
         case 'progress':
@@ -106,7 +105,8 @@ class TencentPlayerController extends ValueNotifier<TencentPlayerValue> {
           value = value.copyWith(isLoading: false);
           break;
         case 'playend':
-          value = value.copyWith(isPlaying: false, position: value.duration, playEnd: true);
+          value = value.copyWith(
+              isPlaying: false, position: value.duration, playEnd: true);
           break;
         case 'netStatus':
           value = value.copyWith(netSpeed: map['netSpeed']);
@@ -124,6 +124,31 @@ class TencentPlayerController extends ValueNotifier<TencentPlayerValue> {
         .receiveBroadcastStream()
         .listen(eventListener);
     return initializingCompleter.future;
+  }
+
+  /// 重新链接到资源 - 对于直播是比较有必要。
+  Future relink() async {
+    assert(this.dataSource != null);
+    switch (this.dataSourceType) {
+      case DataSourceType.asset:
+        await asset(dataSource, playerConfig: playerConfig);
+        break;
+      case DataSourceType.network:
+        await network(dataSource, playerConfig: playerConfig);
+        break;
+      case DataSourceType.file:
+        await file(dataSource, playerConfig: playerConfig);
+        break;
+    }
+  }
+
+  /// 释放之前的资源
+  void relase() async {
+    await _eventSubscription?.cancel();
+    if (_textureId != null) {
+      await channel.invokeListMethod(
+          'dispose', <String, dynamic>{'textureId': _textureId});
+    }
   }
 
   EventChannel _eventChannelFor(int textureId) {
@@ -238,7 +263,11 @@ class _VideoAppLifeCycleObserver with WidgetsBindingObserver {
         break;
       case AppLifecycleState.resumed:
         if (_wasPlayingBeforePause) {
-          _controller.play();
+          if (_controller.value.duration.inSeconds == 0) {
+            _controller.relink();
+          } else {
+            _controller.play();
+          }
         }
         break;
       default:
