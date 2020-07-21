@@ -15,7 +15,7 @@ class TencentPlayerController extends ValueNotifier<TencentPlayerValue> {
   TencentPlayerController() : super(TencentPlayerValue());
 
   Future<void> asset(String dataSource,
-      {PlayerConfig playerConfig = const PlayerConfig()}) {
+      {PlayerConfig playerConfig = const PlayerConfig()}) async {
     this.dataSource = dataSource;
     this.dataSourceType = DataSourceType.asset;
     this.playerConfig = playerConfig;
@@ -23,7 +23,7 @@ class TencentPlayerController extends ValueNotifier<TencentPlayerValue> {
   }
 
   Future<void> network(String dataSource,
-      {PlayerConfig playerConfig = const PlayerConfig()}) {
+      {PlayerConfig playerConfig = const PlayerConfig()}) async {
     this.dataSource = dataSource;
     this.dataSourceType = DataSourceType.network;
     this.playerConfig = playerConfig;
@@ -31,7 +31,7 @@ class TencentPlayerController extends ValueNotifier<TencentPlayerValue> {
   }
 
   Future<void> file(String filePath,
-      {PlayerConfig playerConfig = const PlayerConfig()}) {
+      {PlayerConfig playerConfig = const PlayerConfig()}) async {
     this.dataSource = filePath;
     this.dataSourceType = DataSourceType.file;
     this.playerConfig = playerConfig;
@@ -68,7 +68,7 @@ class TencentPlayerController extends ValueNotifier<TencentPlayerValue> {
     value = value.copyWith(isPlaying: playerConfig.autoPlay);
     dataSourceDescription.addAll(playerConfig.toJson());
     final Map<String, dynamic> response =
-        await channel.invokeMapMethod<String, dynamic>(
+    await channel.invokeMapMethod<String, dynamic>(
       'create',
       dataSourceDescription,
     );
