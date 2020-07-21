@@ -46,7 +46,7 @@ class TencentPlayerController extends ValueNotifier<TencentPlayerValue> {
   int get textureId => _textureId;
 
   Future<void> _initialize() async {
-    await relase();
+    await release();
 
     value = TencentPlayerValue(isLoading: true);
 
@@ -143,7 +143,7 @@ class TencentPlayerController extends ValueNotifier<TencentPlayerValue> {
   }
 
   /// 释放之前的资源
-  void relase() async {
+  Future release() async {
     await _eventSubscription?.cancel();
     if (_textureId != null) {
       await channel.invokeListMethod(
@@ -222,7 +222,6 @@ class TencentPlayerController extends ValueNotifier<TencentPlayerValue> {
       'textureId': _textureId,
       'index': index,
     });
-    print('hahaha');
     value = value.copyWith(bitrateIndex: index);
   }
 
@@ -263,9 +262,7 @@ class _VideoAppLifeCycleObserver with WidgetsBindingObserver {
         break;
       case AppLifecycleState.resumed:
         if (_wasPlayingBeforePause) {
-          if (_controller.value.duration.inSeconds == 0) {
-            _controller.relink();
-          } else {
+          if (_controller.value.duration.inSeconds != 0) {
             _controller.play();
           }
         }
