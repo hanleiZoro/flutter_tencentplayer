@@ -81,7 +81,10 @@ class _FullVideoPageState extends State<FullVideoPage> {
     if (widget.controller != null) {
       controller = widget.controller;
       return;
+    }else {
+      controller = TencentPlayerController();
     }
+
     switch (widget.playType) {
       case PlayType.network:
         controller.network(widget.dataSource);
